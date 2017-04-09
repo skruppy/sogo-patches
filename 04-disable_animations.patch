@@ -1,0 +1,47 @@
+diff -u -u -r a/UI/Common/UIxPageFrame.m b/UI/Common/UIxPageFrame.m
+--- a/UI/Common/UIxPageFrame.m	2017-03-24 14:46:32.000000000 +0100
++++ b/UI/Common/UIxPageFrame.m	2017-03-31 03:52:57.331209858 +0200
+@@ -589,15 +589,6 @@
+ 
+ /* browser/os identification */
+ 
+-- (BOOL) disableInk
+-{
+-  WEClientCapabilities *cc;
+-
+-  cc = [[context request] clientCapabilities];
+-
+-  return [[cc userAgentType] isEqualToString: @"IE"];
+-}
+-
+ - (BOOL) isCompatibleBrowser
+ {
+   WEClientCapabilities *cc;
+diff -u -u -r a/UI/Templates/UIxPageFrame.wox b/UI/Templates/UIxPageFrame.wox
+--- a/UI/Templates/UIxPageFrame.wox	2017-03-24 14:46:32.000000000 +0100
++++ b/UI/Templates/UIxPageFrame.wox	2017-03-31 03:52:19.548184145 +0200
+@@ -6,8 +6,7 @@
+     xmlns:var="http://www.skyrix.com/od/binding"
+     xmlns:const="http://www.skyrix.com/od/constant"
+     xmlns:rsrc="OGo:url"
+-    xmlns:label="OGo:label"
+-    xmlns:bool="OGo:bool">
++    xmlns:label="OGo:label">
+ 
+   <var:string var:value="doctype" const:escapeHTML="NO" />
+   <var:if condition="hideFrame" const:negate="YES">
+@@ -32,12 +31,10 @@
+         <var:foreach list="additionalCSSFiles" item="item">
+           <link type="text/css" rel="stylesheet" var:href="item"/>
+         </var:foreach>
+-        <var:if-ie>
+-          <link type="text/css" rel="stylesheet" rsrc:href="css/no-animation.css"/>
+-        </var:if-ie>
++        <link type="text/css" rel="stylesheet" rsrc:href="css/no-animation.css"/>
+       </head>
+ 
+-      <body var:class="bodyClasses" var:ng-app="angularModule" bool:md-no-ink="disableInk">
++      <body var:class="bodyClasses" var:ng-app="angularModule" md-no-ink="md-no-ink">
+ 
+         <noscript>
+           <div layout="column" layout-align="center center" layout-fill="layout-fill">
