@@ -1,25 +1,29 @@
 diff -u -u -r a/UI/Common/UIxPageFrame.m b/UI/Common/UIxPageFrame.m
---- a/UI/Common/UIxPageFrame.m	2017-03-24 14:46:32.000000000 +0100
-+++ b/UI/Common/UIxPageFrame.m	2017-03-31 03:52:57.331209858 +0200
-@@ -589,15 +589,6 @@
+--- a/UI/Common/UIxPageFrame.m	2017-07-05 17:08:00.000000000 +0200
++++ b/UI/Common/UIxPageFrame.m	2018-01-23 22:14:22.812728914 +0100
+@@ -598,18 +598,6 @@
  
  /* browser/os identification */
  
 -- (BOOL) disableInk
 -{
+-  SOGoUserDefaults *ud;
 -  WEClientCapabilities *cc;
 -
+-  ud = [[context activeUser] userDefaults];
 -  cc = [[context request] clientCapabilities];
 -
--  return [[cc userAgentType] isEqualToString: @"IE"];
+-  return [[cc userAgentType] isEqualToString: @"IE"] ||
+-    [[ud animationMode] isEqualToString: @"limited"] ||
+-    [[ud animationMode] isEqualToString: @"none"];
 -}
--
+ 
  - (BOOL) isCompatibleBrowser
  {
-   WEClientCapabilities *cc;
+
 diff -u -u -r a/UI/Templates/UIxPageFrame.wox b/UI/Templates/UIxPageFrame.wox
---- a/UI/Templates/UIxPageFrame.wox	2017-03-24 14:46:32.000000000 +0100
-+++ b/UI/Templates/UIxPageFrame.wox	2017-03-31 03:52:19.548184145 +0200
+--- a/UI/Templates/UIxPageFrame.wox	2017-07-05 17:08:00.000000000 +0200
++++ b/UI/Templates/UIxPageFrame.wox	2018-01-23 22:18:01.700454974 +0100
 @@ -6,8 +6,7 @@
      xmlns:var="http://www.skyrix.com/od/binding"
      xmlns:const="http://www.skyrix.com/od/constant"
