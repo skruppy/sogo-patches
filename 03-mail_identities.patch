@@ -1,0 +1,39 @@
+diff -u -ur a/UI/MailerUI/UIxMailEditor.m b/UI/MailerUI/UIxMailEditor.m
+--- a/UI/MailerUI/UIxMailEditor.m	2019-03-30 03:47:07.569194934 +0100
++++ b/UI/MailerUI/UIxMailEditor.m	2019-03-30 04:16:23.662289734 +0100
+@@ -239,15 +239,27 @@
+ 
+ - (NSString *) _emailFromIdentity: (NSDictionary *) identity
+ {
+-  NSString *fullName, *format;
++  NSString *email;
++  NSRange delimiter;
+ 
+-  fullName = [identity objectForKey: @"fullName"];
+-  if ([fullName length])
+-    format = @"%{fullName} <%{email}>";
+-  else
+-    format = @"%{email}";
++  email     = [identity objectForKey: @"email"];
+ 
+-  return [identity keysWithFormat: format];
++  delimiter = [email rangeOfString: @"<"];
++  // 'bro@example.com' => '"Bro" <bro@example.com>'  (fullName = "Bro")
++  // 'bro@example.com' => 'bro@example.com'          (fullName = "")
++  if (delimiter.location == NSNotFound)
++    {
++      if ([[identity objectForKey: @"fullName"] length])
++        return [identity keysWithFormat: @"%{fullName} <%{email}>"];
++      else
++        return email;
++    }
++  // '<bro@example.com>' => 'bro@example.com' (fullName = "Bro" or "")
++  else if (delimiter.location == 0)
++    return [email pureEMailAddress];
++  // '"Dude" <bro@example.com>' => '"Dude" <bro@example.com>' (fullName = "Bro" or "")
++  else
++    return email;
+ }
+ 
+ - (NSString *) from
+Only in b/UI/MailerUI: UIxMailEditor.m.orig

@@ -1,0 +1,132 @@
+diff -u -ur a/SoObjects/SOGo/LDAPSource.h b/SoObjects/SOGo/LDAPSource.h
+--- a/SoObjects/SOGo/LDAPSource.h	2019-03-30 03:47:07.137192819 +0100
++++ b/SoObjects/SOGo/LDAPSource.h	2019-03-30 04:03:51.726360838 +0100
+@@ -74,6 +74,8 @@
+ 
+   NSDictionary *modulesConstraints;
+ 
++  NSArray *LDAPLookupFields;
++
+   BOOL passwordPolicy;
+   BOOL updateSambaNTLMPasswords;
+ 
+@@ -108,6 +110,7 @@
+     IMAPLoginField: (NSString *) newIMAPLoginField
+     SieveHostField: (NSString *) newSieveHostField
+         bindFields: (id) newBindFields
++  LDAPLookupFields: (NSArray *) newLDAPLookupFields
+ 	 kindField: (NSString *) newKindField
+ andMultipleBookingsField: (NSString *) newMultipleBookingsField;
+ 
+diff -u -ur a/SoObjects/SOGo/LDAPSource.m b/SoObjects/SOGo/LDAPSource.m
+--- a/SoObjects/SOGo/LDAPSource.m	2019-03-30 03:47:07.121192740 +0100
++++ b/SoObjects/SOGo/LDAPSource.m	2019-03-30 04:12:19.041011206 +0100
+@@ -106,6 +106,8 @@
+       _filter = nil;
+       _userPasswordAlgorithm = nil;
+       listRequiresDot = YES;
++      LDAPLookupFields = [NSArray arrayWithObject: @"*"];
++      [LDAPLookupFields retain];
+ 
+       passwordPolicy = NO;
+       updateSambaNTLMPasswords = NO;
+@@ -149,6 +151,7 @@
+   [_userPasswordAlgorithm release];
+   [sourceID release];
+   [modulesConstraints release];
++  [LDAPLookupFields release];
+   [_scope release];
+   [domain release];
+   [kindField release];
+@@ -191,6 +194,7 @@
+        IMAPLoginField: [udSource objectForKey: @"IMAPLoginFieldName"]
+        SieveHostField: [udSource objectForKey: @"SieveHostFieldName"]
+            bindFields: [udSource objectForKey: @"bindFields"]
++     LDAPLookupFields: [udSource objectForKey: @"LDAPLookupFields"]
+             kindField: [udSource objectForKey: @"KindFieldName"]
+             andMultipleBookingsField: [udSource objectForKey: @"MultipleBookingsFieldName"]];
+ 
+@@ -312,6 +316,7 @@
+     IMAPLoginField: (NSString *) newIMAPLoginField
+     SieveHostField: (NSString *) newSieveHostField
+         bindFields: (id) newBindFields
++  LDAPLookupFields: (NSArray *) newLDAPLookupFields
+          kindField: (NSString *) newKindField
+   andMultipleBookingsField: (NSString *) newMultipleBookingsField
+ {
+@@ -357,6 +362,8 @@
+           ASSIGN(bindFields, [newBindFields componentsSeparatedByString: @","]);
+         }
+     }
++  if (newLDAPLookupFields)
++    ASSIGN(LDAPLookupFields, newLDAPLookupFields);
+   if (newKindField)
+     ASSIGN(kindField, [newKindField lowercaseString]);
+   if (newMultipleBookingsField)
+@@ -1226,7 +1233,6 @@
+   NSEnumerator *entries;
+   NSMutableArray *contacts;
+   EOQualifier *qualifier;
+-  NSArray *attributes;
+ 
+   contacts = [NSMutableArray array];
+ 
+@@ -1234,20 +1240,19 @@
+     {
+       ldapConnection = [self _ldapConnection];
+       qualifier = [self _qualifierForFilter: match onCriteria: criteria];
+-      attributes = [NSArray arrayWithObject: @"*"];
+ 
+       if ([_scope caseInsensitiveCompare: @"BASE"] == NSOrderedSame)
+         entries = [ldapConnection baseSearchAtBaseDN: baseDN
+                                            qualifier: qualifier
+-                                          attributes: attributes];
++                                          attributes: LDAPLookupFields];
+       else if ([_scope caseInsensitiveCompare: @"ONE"] == NSOrderedSame)
+         entries = [ldapConnection flatSearchAtBaseDN: baseDN
+                                            qualifier: qualifier
+-                                          attributes: attributes];
++                                          attributes: LDAPLookupFields];
+       else /* we do it like before */ 
+         entries = [ldapConnection deepSearchAtBaseDN: baseDN
+                                            qualifier: qualifier
+-                                          attributes: attributes];
++                                          attributes: LDAPLookupFields];
+       while ((currentEntry = [entries nextObject]))
+         [contacts addObject:
+                     [self _convertLDAPEntryToContact: currentEntry]];
+@@ -1260,23 +1265,21 @@
+ {
+   NGLdapConnection *ldapConnection;
+   NSEnumerator *entries;
+-  NSArray *attributes;
+ 
+   ldapConnection = [self _ldapConnection];
+-  attributes = [NSArray arrayWithObject: @"*"];
+ 
+   if ([_scope caseInsensitiveCompare: @"BASE"] == NSOrderedSame)
+     entries = [ldapConnection baseSearchAtBaseDN: baseDN
+                                        qualifier: qualifier
+-                                      attributes: attributes];
++                                      attributes: LDAPLookupFields];
+   else if ([_scope caseInsensitiveCompare: @"ONE"] == NSOrderedSame)
+     entries = [ldapConnection flatSearchAtBaseDN: baseDN
+                                        qualifier: qualifier
+-                                      attributes: attributes];
++                                      attributes: LDAPLookupFields];
+   else
+     entries = [ldapConnection deepSearchAtBaseDN: baseDN
+                                        qualifier: qualifier
+-                                      attributes: attributes];
++                                      attributes: LDAPLookupFields];
+ 
+   return [entries nextObject];
+ }
+@@ -1765,6 +1768,7 @@
+ 		  IMAPLoginField: nil
+ 		  SieveHostField: nil
+ 		 bindFields: nil
++	LDAPLookupFields: nil
+ 		  kindField: nil
+ 		  andMultipleBookingsField: nil];
+               [ab setListRequiresDot: NO];

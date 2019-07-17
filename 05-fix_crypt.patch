@@ -1,0 +1,16 @@
+diff -u -ur a/SoObjects/SOGo/LDAPSource.m b/SoObjects/SOGo/LDAPSource.m
+--- a/SoObjects/SOGo/LDAPSource.m	2019-03-30 03:47:07.121192740 +0100
++++ b/SoObjects/SOGo/LDAPSource.m	2019-03-30 04:18:25.630927248 +0100
+@@ -603,6 +603,11 @@
+       return nil;
+     }
+ 
++  if ([_userPasswordAlgorithm caseInsensitiveCompare: @"sha256-crypt"] == NSOrderedSame || [_userPasswordAlgorithm caseInsensitiveCompare: @"sha512-crypt"] == NSOrderedSame)
++    {
++      _userPasswordAlgorithm = @"CRYPT";
++    }
++
+   return [NSString stringWithFormat: @"{%@}%@", _userPasswordAlgorithm, pass];
+ }
+ 
+Only in b/SoObjects/SOGo: LDAPSource.m.orig
